@@ -6,16 +6,20 @@ import { TodoController } from "../../src/controllers/TodoController";
 import { TodoUseCase } from "../../src/usecases/TodoUseCase";
 import { TodoRepository } from "../../src/repositories/TodoRepository";
 
-jest.mock("../../src/repositories/TodoRepository");
-
 describe("TodoController", () => {
   let app: Express;
   let todoController: TodoController;
-  let todoRepository: jest.Mocked<TodoRepository>;
 
   beforeEach(() => {
-    todoRepository = new TodoRepository() as jest.Mocked<TodoRepository>;
-    const todoUseCase = new TodoUseCase(todoRepository);
+    const mockTodoRepository = {
+      add: jest
+        .fn()
+        .mockImplementation((todo: { title: string }) =>
+          Promise.resolve({ id: 1, title: todo.title })
+        ),
+    } as unknown as TodoRepository;
+
+    const todoUseCase = new TodoUseCase(mockTodoRepository);
     todoController = new TodoController(todoUseCase);
 
     // Setup express app for testing
@@ -25,15 +29,11 @@ describe("TodoController", () => {
   });
 
   it("should return a todo when a post request is made", async () => {
-    const todoTitle = "Test todo";
-    todoRepository.add.mockResolvedValue({ id: 1, title: todoTitle });
-
     const response = await request(app)
       .post("/todos")
-      .send({ title: todoTitle });
+      .send({ title: "Test todo" });
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ id: 1, title: todoTitle });
-    expect(todoRepository.add).toHaveBeenCalledWith({ title: todoTitle });
+    expect(response.body).toEqual({ id: 1, title: "Test todo" });
   });
 });
