@@ -8,8 +8,7 @@ describe("TodoUseCase", () => {
   let todoRepository: jest.Mocked<TodoRepository>;
 
   beforeEach(() => {
-    // as any is used because the jest mock function doesn't play well with the new keyword
-    todoRepository = new TodoRepository() as any;
+    todoRepository = new TodoRepository() as jest.Mocked<TodoRepository>;
     todoUseCase = new TodoUseCase(todoRepository);
   });
 
